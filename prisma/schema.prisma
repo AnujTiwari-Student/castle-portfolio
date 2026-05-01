@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SkillCategory {
+  LANGUAGE
+  FRAMEWORK
+  DEVOPS
+  DATABASE
+  CLOUD
+  TOOL
+}
+
+enum ArtifactType {
+  CONCURRENCY_ORB    // Go goroutines visualization
+  K8S_CLUSTER        // Kubernetes nodes
+  PIPELINE_SCROLL    // CI/CD
+  CRYSTAL            // Generic skill
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  shortDesc    String   @db.VarChar(280)
+  description  String   @db.Text
+  techStack    String[] // Postgres array
+  githubUrl    String?
+  liveUrl      String?
+  imageUrl     String?
+  featured     Boolean  @default(false)
+  // Pedestal placement in the Forge room
+  pedestalX    Float    @default(0)
+  pedestalY    Float    @default(0)
+  pedestalZ    Float    @default(0)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([featured, displayOrder])
+}
+
+model Skill {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  category      SkillCategory
+  proficiency   Int           // 1-100
+  artifactType  ArtifactType
+  description   String?       @db.Text
+  iconUrl       String?
+  // Library shelf placement
+  shelfX        Float         @default(0)
+  shelfY        Float         @default(0)
+  shelfZ        Float         @default(0)
+  createdAt     DateTime      @default(now())
+
+  @@index([category])
+}
+
+model VisitorAnalytics {
+  id          String   @id @default(cuid())
+  sessionId   String   @db.VarChar(64)
+  roomVisited String   @db.VarChar(32)   // "forge" | "library" | "lookout"
+  projectSlug String?  @db.VarChar(128)
+  durationMs  Int      @default(0)
+  userAgent   String?  @db.Text
+  country     String?  @db.VarChar(8)
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([roomVisited, createdAt])
+}
