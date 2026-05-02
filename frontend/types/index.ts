@@ -397,6 +397,8 @@ export interface GameState {
   currentCheat: CheatCode | null
   mapOpen: boolean
   cheatConsoleOpen: boolean
+  resumeVaultUnlocked: boolean
+  citadelCombatBypassed: boolean
 }
 
 // ─── Interaction ──────────────────────────────────────────────────────────────
