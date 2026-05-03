@@ -2080,3 +2080,255 @@ Avoid these mistakes:
 - Do not make resume download depend only on frontend static files once backend exists.
 - Do not import stores inside `api.ts`; keep it dependency-light.
 - Do not make `api.ts` responsible for UI toasts/errors. Components/stores decide how to display errors.
+
+---
+
+## PortfolioCanvas Integration Notes
+
+File:
+
+```txt
+frontend/components/canvas/PortfolioCanvas.tsx
+```
+
+Purpose:
+
+```txt
+Main React Three Fiber Canvas wrapper for the 3D portfolio city.
+```
+
+### Responsibilities
+
+`PortfolioCanvas` owns:
+
+- Canvas setup
+- camera defaults
+- WebGL configuration
+- Suspense boundary for future async 3D assets
+- full-screen canvas container
+
+It does **not** own:
+
+- city scene layout
+- lighting
+- player logic
+- controls
+- HUD
+- UI modals
+- Zustand state
+- interaction logic
+- backend fetching
+
+Keep it as a clean wrapper.
+
+---
+
+### Expected Usage
+
+Future `frontend/app/page.tsx` should eventually look similar to:
+
+```tsx
+import PortfolioCanvas from '@/components/canvas/PortfolioCanvas'
+import SceneRoot from '@/components/canvas/SceneRoot'
+import HUD from '@/components/ui/HUD'
+
+export default function HomePage() {
+  return (
+    <main className="relative h-screen w-full overflow-hidden">
+      <PortfolioCanvas>
+        <SceneRoot />
+      </PortfolioCanvas>
+
+      <HUD />
+    </main>
+  )
+}
+```
+
+Canvas content goes inside `PortfolioCanvas`.
+
+UI overlays stay outside `PortfolioCanvas`.
+
+---
+
+### Dependency
+
+Uses camera config from:
+
+```txt
+frontend/lib/constants.ts
+```
+
+Expected constant:
+
+```ts
+export const CAMERA = {
+  offset: [0, 6, 12] as [number, number, number],
+  lookAtOffset: [0, 1.35, 0] as [number, number, number],
+  lerpFactor: 0.1,
+  fov: 60,
+  near: 0.1,
+  far: 300,
+} as const
+```
+
+---
+
+### Error-Prone Areas
+
+Avoid these mistakes:
+
+- Do not put HUD inside Canvas unless it is truly 3D UI.
+- Do not put modal components inside Canvas.
+- Do not put player movement logic in `PortfolioCanvas`.
+- Do not put city zone layout in `PortfolioCanvas`.
+- Do not put keyboard listeners in `PortfolioCanvas`.
+- Do not fetch backend data directly in `PortfolioCanvas`.
+- Keep this file boring and stable.
+
+---
+
+## SceneRoot Integration Notes
+
+File:
+
+```txt
+frontend/components/canvas/SceneRoot.tsx
+```
+
+Purpose:
+
+```txt
+Root 3D scene composition component that mounts the main scene content inside PortfolioCanvas.
+```
+
+### Current Temporary Responsibilities
+
+`SceneRoot` currently renders:
+
+- temporary ambient light
+- temporary directional light
+- temporary fog
+- temporary ground plane
+- temporary central debug marker
+
+This is intentional because the real scene subcomponents are not created yet.
+
+---
+
+### Future Responsibilities
+
+After the next Phase 1 files exist, `SceneRoot` should eventually compose:
+
+```tsx
+<Lighting />
+<Environment />
+<Ground />
+<City />
+```
+
+Future intended structure:
+
+```tsx
+export function SceneRoot() {
+  return (
+    <>
+      <Lighting />
+      <Environment />
+      <Ground />
+      <City />
+    </>
+  )
+}
+```
+
+---
+
+### Files That Should Eventually Replace Temporary Logic
+
+```txt
+frontend/components/canvas/Lighting.tsx
+frontend/components/canvas/Environment.tsx
+frontend/components/canvas/Ground.tsx
+frontend/components/world/City.tsx
+```
+
+Until these files exist, do not import them.
+
+---
+
+### Important Rule
+
+Do not create fake imports.
+
+Bad:
+
+```tsx
+import Lighting from '@/components/canvas/Lighting'
+import Ground from '@/components/canvas/Ground'
+import City from '@/components/world/City'
+```
+
+if those files do not exist yet.
+
+Good:
+
+```txt
+Keep temporary inline placeholder scene until the files are generated one by one.
+```
+
+---
+
+### What SceneRoot Should Not Own
+
+Do not put these inside `SceneRoot`:
+
+- HUD
+- UI modals
+- toast containers
+- backend fetching
+- keyboard listeners
+- player movement logic
+- combat logic
+- music player logic
+- cheat console logic
+- Jio coding loop logic
+
+Those belong in dedicated components/stores.
+
+---
+
+### Current Dependency
+
+Uses world config from:
+
+```txt
+frontend/lib/constants.ts
+```
+
+Expected constant:
+
+```ts
+export const WORLD = {
+  groundSize: 200,
+  groundColor: '#1a1a2e',
+  gridColor: '#16213e',
+  ambientIntensity: 0.4,
+  fogNear: 60,
+  fogFar: 150,
+  fogColor: '#0f0f1a',
+} as const
+```
+
+---
+
+### Error-Prone Areas
+
+Avoid these mistakes:
+
+- Do not turn `SceneRoot` into a giant scene file.
+- Do not add every building directly inside `SceneRoot`.
+- Do not put store orchestration here.
+- Do not put UI overlays here.
+- Do not put backend API calls here.
+- Replace temporary lighting/ground only after the dedicated files exist.

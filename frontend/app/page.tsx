@@ -1,12 +1,12 @@
-import React from 'react'
+import PortfolioCanvas from '@/components/canvas/PortfolioCanvas'
+import SceneRoot from '@/components/canvas/SceneRoot'
 
-function Homepage() {
+export default function HomePage() {
   return (
-    <div>
-      <h1>Castle Portfolio</h1>
-      <p>Welcome to my 3D portfolio!</p>
-    </div>
+    <main className="h-screen w-full">
+      <PortfolioCanvas>
+        <SceneRoot />
+      </PortfolioCanvas>
+    </main>
   )
 }
-
-export default Homepage
